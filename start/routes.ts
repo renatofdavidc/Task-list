@@ -8,6 +8,7 @@
 */
 
 import AuthController from '#controllers/auth_controller'
+import TasksController from '#controllers/tasks_controller'
 import UsersController from '#controllers/users_controller'
 import router from '@adonisjs/core/services/router'
 
@@ -16,6 +17,11 @@ router.get('/', async () => {
     hello: 'world',
   }
 })
+
+router.group(() => {
+  router.post('/create', [TasksController, 'create'])
+})
+
 router.group(() => {
   router.get('/ping', [UsersController, 'ping'])
   router.post('/register', [AuthController, 'register'])
