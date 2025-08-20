@@ -1,27 +1,27 @@
-import User from "#models/user";
-
-export interface UserType {
-    name: string
-    password: string
-    email: string
-}
+import User from '#models/user'
+import Hash from '@adonisjs/core/services/hash'
+import jwt from 'jsonwebtoken'
+import env from '#start/env'
 
 export default class AuthService {
-    async registerUser(username: string, email: string, password: string) {
+  async registerUser(name: string, email: string, password: string) {
+    const user = await User.create({ name, email, password })
+    return user
+  }
 
-        const user: UserType = await User.create({
-            name: username,
-            email: email,
-            password: password
-        })
-        return user
-    }
+  async login(email: string, password: string) {
+    const user = await User.findBy('email', email)
+    if (!user) throw new Error('Credenciais inválidas')
 
-    async login(email: string, password: string) {
-        if (!email || !password) {
-            return {
-                error: 'Email e senha são obrigatórios'
-            }
-        }
-    }
+    const isValid = await Hash.verify(user.password, password)
+    if (!isValid) throw new Error('Credenciais inválidas')
+
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      env.get('APP_KEY'),
+      { expiresIn: '1d' }
+    )
+
+    return { token, user }
+  }
 }

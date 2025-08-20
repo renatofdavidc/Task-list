@@ -1,22 +1,18 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import TaskService from '../service/task_service.js'
-import { createTaskValidator } from '#validators/task'
 
 export default class TasksController {
   public async create({ request, response }: HttpContext) {
-    try {
-      const taskService = new TaskService()
+  try {
+    const { name, description } = request.all()
+    const userId = request.input('authUserId')
 
-      const payload = await request.validateUsing(createTaskValidator)
+    const taskService = new TaskService()
+    const result = await taskService.createTask(name, description, userId)
 
-      const result = await taskService.createTask(payload.name, payload.description, 1)
-
-      return response.ok(result)
-    } catch (error) {
-      console.error('Erro: ', error)
-      return response.internalServerError({
-        erro: 'Erro interno do servidor',
-      })
-    }
+    return response.created(result)
+  } catch (error) {
+    return response.internalServerError({ erro: 'Erro interno do servidor' })
   }
+}
 }

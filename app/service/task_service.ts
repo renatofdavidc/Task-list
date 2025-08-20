@@ -1,3 +1,5 @@
+import db from "@adonisjs/lucid/services/db"
+
 export interface Task {
   name: string
   description: string
@@ -6,13 +8,14 @@ export interface Task {
 }
 
 export default class TaskService {
-  async createTask(name: string, description: string, userId: number): Promise<Task> {
-    const task = {
-      name: name,
-      description: description,
-      completed: false,
-      userId: userId,
-    }
+  async createTask(name: string, description: string, userId: number): Promise<Task[]> {
+    const task = await db.table('tasks')
+      .returning('id')
+      .insert({
+        name: name,
+        description: description,
+        user_id: userId
+      })
 
     return task
   }

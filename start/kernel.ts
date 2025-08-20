@@ -10,6 +10,7 @@
 
 import router from '@adonisjs/core/services/router'
 import server from '@adonisjs/core/services/server'
+import AuthMiddleware from '#middleware/auth_middleware'
 
 /**
  * The error handler is used to convert an exception
@@ -26,6 +27,7 @@ server.use([
   () => import('#middleware/container_bindings_middleware'),
   () => import('#middleware/force_json_response_middleware'),
   () => import('@adonisjs/cors/cors_middleware'),
+  () => import('#middleware/auth_middleware')
 ])
 
 /**
@@ -38,4 +40,7 @@ router.use([() => import('@adonisjs/core/bodyparser_middleware')])
  * Named middleware collection must be explicitly assigned to
  * the routes or the routes group.
  */
-export const middleware = router.named({})
+export const middleware = {
+  authMiddleware: () => new AuthMiddleware().handle,
+  // ...outros middlewares...
+}
