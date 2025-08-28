@@ -11,11 +11,15 @@ export default class AuthMiddleware {
     }
 
     try {
-      const [, token] = authHeader.split(' ')
+      const [scheme, token] = authHeader.split(' ')
+      if (scheme !== 'Bearer' || !token) {
+        return ctx.response.unauthorized({ error: 'Formato de token inválido' })
+      }
       const payload = jwt.verify(token, env.get('APP_KEY')) as { userId: number }
-      ctx.request.updateBody({ authUserId: payload.userId })
+      ;(ctx.request as any).authUserId = payload.userId
       await next()
-    } catch {
+    } catch (err) {
+      console.error('Auth error:', err)
       return ctx.response.unauthorized({ error: 'Token inválido ou expirado' })
     }
   }
