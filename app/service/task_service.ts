@@ -24,9 +24,20 @@ export default class TaskService {
     return row as Task
   }
 
-  async completeTask(taskId: number, userId: number): Promise<{success: boolean}> {
+  async completeTask(taskId: number, userId: number): Promise<{ success: boolean }> {
+    const task = await db.from('tasks')
+      .where('id', taskId)
+      .andWhere('user_id', userId)
+      .first()
 
-    
+    if (!task) {
+      throw new Error('Task não encontrada ou não pertence ao usuário')
+    }
+
+    await db.from('tasks')
+      .where('id', taskId)
+      .andWhere('user_id', userId)
+      .update('completed', true)
 
     return { success: true }
   }

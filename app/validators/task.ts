@@ -6,3 +6,9 @@ export const createTaskValidator = vine.compile(
     description: vine.string().trim().minLength(0).maxLength(5000),
   })
 )
+
+export const completeTaskValidator = vine.compile(
+  vine.object({
+    taskId: vine.number()
+  })
+)
