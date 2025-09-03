@@ -11,7 +11,8 @@ router.get('/', async () => {
 
 router.group(() => {
   router.post('/create', [TasksController, 'create'])
-}).use(middleware.authMiddleware())
+  router.put('/complete/:id', [TasksController, 'complete'])
+}).use(middleware.authMiddleware()).prefix('/task')
 
 router.group(() => {
   router.post('/register', [AuthController, 'register'])

@@ -1,6 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import TaskService from '../service/task_service.js'
-import { completeTaskValidator, createTaskValidator } from '#validators/task'
+import { createTaskValidator } from '#validators/task'
 
 export default class TasksController {
   public async create({ request, response }: HttpContext) {
@@ -24,14 +24,14 @@ export default class TasksController {
 
   public async complete({ request, response }: HttpContext) {
     try {
-      const payload = await request.validateUsing(completeTaskValidator)
+      const { id } = request.params()
       const userId = (request as any).authUserId
       if (!userId) {
         return response.unauthorized({ error: 'Usuário não autenticado' })
       }
 
       const taskService = new TaskService()
-      const result = await taskService.completeTask(payload.taskId, userId)
+      const result = await taskService.completeTask(id, userId)
 
       return response.ok(result)
     } catch (error: any) {
@@ -42,4 +42,5 @@ export default class TasksController {
       return response.internalServerError({ error: 'Erro interno do servidor', detail: error.message })
     }
   }
+
 }
