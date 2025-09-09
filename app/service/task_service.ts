@@ -1,44 +1,38 @@
-import db from "@adonisjs/lucid/services/db"
-
-export interface Task {
-  id: number
-  name: string
-  description: string
-  completed: boolean
-  userId: number
-  created_at?: Date
-  updated_at?: Date
-}
+import Task from "#models/task"
+import TaskDAO from "../DAO/task_dao.js"
 
 export default class TaskService {
+  private taskDao = new TaskDAO()
+  
   async createTask(name: string, description: string, userId: number): Promise<Task> {
-    const [row] = await db.table('tasks')
-      .returning(['id', 'name', 'description', 'completed', 'user_id as userId', 'created_at', 'updated_at'])
-      .insert({
-        name,
-        description,
-        user_id: userId,
-        completed: false
-      })
-
-    return row as Task
+    const result = await this.taskDao.insertNewTask(name, description, userId)
+    return result
   }
 
   async completeTask(taskId: number, userId: number): Promise<{ success: boolean }> {
-    const task = await db.from('tasks')
-      .where('id', taskId)
-      .andWhere('user_id', userId)
-      .first()
+    try {
+      const taskExists = await this.taskDao.taskExists(taskId)
+      
+      if (!taskExists) {
+        throw new Error('Task não encontrada')
+      }
 
-    if (!task) {
-      throw new Error('Task não encontrada ou não pertence ao usuário')
+      const taskBelongsToUser = await this.taskDao.taskBelongsToUser(taskId, userId)
+      
+      if (!taskBelongsToUser) {
+        throw new Error('Task não pertence ao usuário')
+      }
+
+      await this.taskDao.completeTask(taskId, userId)
+      return { success: true }
+    } catch (error) {
+      throw error
     }
-
-    await db.from('tasks')
-      .where('id', taskId)
-      .andWhere('user_id', userId)
-      .update('completed', true)
-
-    return { success: true }
   }
+
+  async getTasksByUser(userId: number): Promise<Task[]> {
+    const tasks = await Task.query().where('userId', userId)
+    return tasks
+  }
+
 }

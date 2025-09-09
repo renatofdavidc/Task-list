@@ -43,4 +43,19 @@ export default class TasksController {
     }
   }
 
+  public async getTasksByUser({ request, response }: HttpContext) {
+    try {
+      const userId = (request as any).authUserId
+      if (!userId) {
+        return response.unauthorized({ error: 'Usuário não autenticado' })
+      }
+
+      const taskService = new TaskService()
+      const result = await taskService.getTasksByUser(userId)
+
+      return response.ok(result)
+    } catch (error) {
+      return response.internalServerError({ error: 'Erro interno do servidor', detail: error.message })
+    }
+  }
 }

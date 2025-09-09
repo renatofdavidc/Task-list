@@ -12,7 +12,7 @@ export default class User extends BaseModel {
   @column()
   declare email: string
 
-  @column({ serializeAs: null }) // não expõe a senha no JSON
+  @column({ serializeAs: null })
   declare password: string
 
   @column.dateTime({ autoCreate: true })
