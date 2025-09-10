@@ -13,6 +13,7 @@ router.group(() => {
   router.post('/create', [TasksController, 'create'])
   router.put('/complete/:id', [TasksController, 'complete'])
   router.get('/all', [TasksController, 'getTasksByUser'])
+  router.put('/update/:id', [TasksController, 'updateTask'])
 }).use(middleware.authMiddleware()).prefix('/tasks')
 
 router.group(() => {

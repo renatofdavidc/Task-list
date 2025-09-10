@@ -37,4 +37,22 @@ export default class TaskDAO {
     
     return task !== null
   }
+
+  public async updateTask(taskId: number, userId: number, taskName?: string, description?: string): Promise<Task> {
+    const task = await Task.query()
+      .where('id', taskId)
+      .andWhere('userId', userId)
+      .firstOrFail()
+    
+    if (taskName !== undefined) {
+      task.name = taskName
+    }
+    
+    if (description !== undefined) {
+      task.description = description
+    }
+    
+    await task.save()
+    return task
+  }
 }

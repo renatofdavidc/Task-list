@@ -1,8 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import TaskService from '../service/task_service.js'
-import { createTaskValidator } from '#validators/task'
+import { createTaskValidator, updateTaskValidator } from '#validators/task'
 
 export default class TasksController {
+
+  private taskService = new TaskService()
+
   public async create({ request, response }: HttpContext) {
     try {
       const userId = (request as any).authUserId
@@ -12,13 +15,15 @@ export default class TasksController {
 
       const payload = await request.validateUsing(createTaskValidator)
 
-      const taskService = new TaskService()
-      const task = await taskService.createTask(payload.name, payload.description, userId)
+      const task = await this.taskService.createTask(payload.name, payload.description, userId)
 
       return response.created({ task })
     } catch (error) {
       console.error('Create task error:', error)
-      return response.internalServerError({ error: 'Erro interno do servidor', detail: error.message })
+      return response.internalServerError({
+        error: 'Erro interno do servidor',
+        detail: error.message,
+      })
     }
   }
 
@@ -30,8 +35,7 @@ export default class TasksController {
         return response.unauthorized({ error: 'Usuário não autenticado' })
       }
 
-      const taskService = new TaskService()
-      const result = await taskService.completeTask(id, userId)
+      const result = await this.taskService.completeTask(id, userId)
 
       return response.ok(result)
     } catch (error: any) {
@@ -39,7 +43,10 @@ export default class TasksController {
         return response.notFound({ error: error.message })
       }
       console.error('Complete task error:', error)
-      return response.internalServerError({ error: 'Erro interno do servidor', detail: error.message })
+      return response.internalServerError({
+        error: 'Erro interno do servidor',
+        detail: error.message,
+      })
     }
   }
 
@@ -50,12 +57,34 @@ export default class TasksController {
         return response.unauthorized({ error: 'Usuário não autenticado' })
       }
 
-      const taskService = new TaskService()
-      const result = await taskService.getTasksByUser(userId)
+      const result = await this.taskService.getTasksByUser(userId)
 
       return response.ok(result)
     } catch (error) {
-      return response.internalServerError({ error: 'Erro interno do servidor', detail: error.message })
+      return response.internalServerError({
+        error: 'Erro interno do servidor',
+        detail: error.message,
+      })
+    }
+  }
+
+  public async updateTask({ request, response }: HttpContext) {
+    try {
+      const { id } = request.params()
+      const payload = await request.validateUsing(updateTaskValidator)
+      const userId = (request as any).authUserId
+      if (!userId) {
+        return response.unauthorized({ error: 'Usuário não autenticado' })
+      }
+
+      const result = await this.taskService.updateTask(id, userId, payload.name, payload.description)
+
+      return response.ok(result)
+    } catch (error) {
+      return response.internalServerError({
+        error: 'Erro interno do servidor',
+        detail: error.message,
+      })
     }
   }
 }
